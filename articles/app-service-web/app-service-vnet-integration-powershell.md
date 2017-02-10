@@ -334,8 +334,14 @@ Copy the following script and save it to a file. If you don’t want to use the 
         CreateVnetGateway $resourceGroupName $vnetName $vnetIpName $location $vnetIpConfigName $vnetGatewayName $virtualNetwork.Properties.CertBlob $vnetPointToSiteAddressSpace
 
         Write-Host "Retrieving VPN Package and supplying to App"
-        $packageUri = Get-AzureRmVpnClientPackage -ResourceGroupName $resourceGroupName -VirtualNetworkGatewayName $vnetGatewayName -ProcessorArchitecture Amd64
-
+        $packageUri = Get-AzureRmVpnClientPackage -ResourceGroupName $resourceGroupName -VirtualNetworkGatewayName $vnetGatewayName -ProcessorArchitecture Amd64                
+        
+        # Get-AzureRmVpnClientPackage may return a URL with literal double-quotes
+        if($packageUri.Length -gt 0 -and $packageUri.Substring(0,1) -eq '"')
+        {
+            $packageUri = $packageUri.Substring(1, $packageUri.Length - 2)
+        }
+        
         # Put the VPN client configuration package onto the App
         $PropertiesObject = @{
         "vnetName" = $VirtualNetworkName; "vpnPackageUri" = $packageUri
@@ -514,6 +520,12 @@ Copy the following script and save it to a file. If you don’t want to use the 
         # Now finish joining by getting the VPN package and giving it to the App
         Write-Host "Retrieving VPN Package and supplying to App"
         $packageUri = Get-AzureRmVpnClientPackage -ResourceGroupName $vnet.ResourceGroupName -VirtualNetworkGatewayName $gateway.Name -ProcessorArchitecture Amd64
+        
+        # Get-AzureRmVpnClientPackage may return a URL with literal double-quotes
+        if($packageUri.Length -gt 0 -and $packageUri.Substring(0,1) -eq '"')
+        {
+            $packageUri = $packageUri.Substring(1, $packageUri.Length - 2)
+        }
 
         # Put the VPN client configuration package onto the App
         $PropertiesObject = @{
